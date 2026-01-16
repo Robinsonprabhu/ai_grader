@@ -43,14 +43,28 @@ const riskRules = [
   },
 ];
 
+// utility: tokenize text into meaningful words
+function tokenize(text) {
+  const stopWords = new Set([
+    'the','is','are','was','were','a','an','and','or','of','to','in','on','for','with','as','by','at','from'
+  ]);
+
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .split(/\s+/)
+    .filter(word => word.length > 2 && !stopWords.has(word));
+}
+
 export function analyzeAnswer(answer, modelAnswer) {
   const answerText = answer.toLowerCase();
   const modelText = (modelAnswer || '').toLowerCase();
 
   const triggeredRules = [];
   let maxSeverity = 0;
-  let relevanceScore = 50;
+  let relevanceScore = 40;
 
+  // ---------------- RISK DETECTION ----------------
   riskRules.forEach((rule) => {
     let triggered = false;
     let matches = [];
@@ -74,26 +88,39 @@ export function analyzeAnswer(answer, modelAnswer) {
         id: rule.id,
         name: rule.name,
         severity: rule.severity,
-        matches: matches,
+        matches,
       });
       maxSeverity = Math.max(maxSeverity, rule.severity);
     }
   });
 
+  // ---------------- RELEVANCE LOGIC (FIXED) ----------------
   if (modelAnswer) {
-    const answerWords = answerText.split(/\s+/).length;
-    const modelWords = modelText.split(/\s+/).length;
-    const wordDiff = Math.abs(answerWords - modelWords);
+    const answerWords = tokenize(answerText);
+    const modelWords = tokenize(modelText);
 
-    if (wordDiff < 20 && answerText.includes(modelText.substring(0, 30))) {
-      relevanceScore = 85 + Math.random() * 10;
-    } else if (answerText.includes(modelText.substring(0, 20))) {
-      relevanceScore = 70 + Math.random() * 15;
+    const commonWords = answerWords.filter(word =>
+      modelWords.includes(word)
+    );
+
+    const overlapCount = commonWords.length;
+
+    if (overlapCount > 0) {
+      const overlapRatio = overlapCount / modelWords.length;
+
+      if (overlapRatio > 0.5) {
+        relevanceScore = 90 + Math.random() * 5;
+      } else if (overlapRatio > 0.2) {
+        relevanceScore = 75 + Math.random() * 10;
+      } else {
+        relevanceScore = 60 + Math.random() * 10;
+      }
     } else {
-      relevanceScore = 45 + Math.random() * 25;
+      relevanceScore = 40 + Math.random() * 10;
     }
   }
 
+  // ---------------- RISK CLASSIFICATION ----------------
   const riskScore = maxSeverity;
   let riskLevel;
   let riskColor;

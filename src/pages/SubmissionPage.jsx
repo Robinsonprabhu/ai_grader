@@ -6,7 +6,7 @@ import { analyzeAnswer } from '../utils/riskDetection';
 const sampleQuestions = [
   'Explain what machine learning is and provide examples.',
   'Describe the difference between supervised and unsupervised learning.',
-  'What is neural network and how does it work?',
+  'What is neural network and usage of it.how does it work?',
   'Explain the concept of overfitting in machine learning.',
 ];
 

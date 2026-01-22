@@ -127,7 +127,7 @@ const riskRules = [
 // utility: tokenize text into meaningful words
 function tokenize(text) {
   const stopWords = new Set([
-    'the','is','are','was','were','a','an','and','or','of','to','in','on','for','with','as','by','at','from'
+    'the','is','are','was','were','a','an','and','or','of','to','in','on','for','with','as','by','at','from','that'
   ]);
 
   return text
